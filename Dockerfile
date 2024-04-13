@@ -15,6 +15,8 @@ EXPOSE 8080
 
 # Define environment variable
 ENV PORT 8080
+ENV TAPO_USERNAME hamishapps@gmail.com
+ENV TAPO_PASSWORD l1tHyr~s
 
 # Run app.py when the container launches
 CMD ["sh", "-c", "hypercorn main:app --bind 0.0.0.0:$PORT"]
