@@ -21,6 +21,9 @@ docker build -t lightcontrolapi:latest .
 
 ```sh
 docker run -d -p 8080:8080 --name light_api lightcontrolapi:latest
+
+# To Test
+docker run -it -p 8080:8080 hamishburke/quartapp:latest
 ```
 
 ### API Endpoints
