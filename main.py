@@ -98,18 +98,28 @@ GET /get_info?lights=kitchen_light&lights=tv_light
 """
 @app.route('/get_info', methods=['GET'])
 async def get_info():
-    print("Getting info for lights")
-    light_names = request.args.getlist('lights') or lights.keys()  # Get info for specified or all lights
-    info = await asyncio.gather(*[
-        get_device_info(lights[name]) for name in light_names if name in lights
-    ])
-    return jsonify({
+    light_names = request.args.getlist('lights') or list(lights.keys())
+    info_responses = []
+    for name in light_names:
+        if name in lights and lights[name]:
+            try:
+                device_info = await get_device_info(lights[name])
+                info_responses.append((name, device_info))
+            except Exception as e:
+                app.logger.error(f"Failed to retrieve info for {name}: {e}")
+                info_responses.append((name, None))
+        else:
+            info_responses.append((name, None))
+
+    response_dict = {
         name: {
-            'is_on': info[idx].device_on if info[idx] is not None else None,
-            'hue': info[idx].hue if info[idx] is not None and hasattr(info[idx], 'hue') else None,
-            'brightness': info[idx].brightness if info[idx] is not None and hasattr(info[idx], 'brightness') else None
-        } for idx, name in enumerate(light_names if light_names else lights.keys())
-    }), 200
+            'is_on': info.device_on if info else None,
+            'hue': getattr(info, 'hue', None) if info else None,
+            'brightness': getattr(info, 'brightness', None) if info else None
+        } for name, info in info_responses
+    }
+    return jsonify(response_dict), 200
+
 
 
 async def set_light_properties(device, brightness=None, color=None):
