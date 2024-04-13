@@ -6,8 +6,8 @@ import os
 app = Quart(__name__)
 
 # Replace these with your actual Tapo account details
-TAPO_USERNAME = os.environ.get("TAPO_USERNAME", "")
-TAPO_PASSWORD = os.environ.get("TAPO_PASSWORD", "")
+TAPO_USERNAME = "hamishapps@gmail.com"
+TAPO_PASSWORD = "l1tHyr~s"
 IP_ADDRESSES = {
     "kitchen_light": "192.168.68.60", # Living room, Kitchen light
     "tv_light": "192.168.68.61", # Living room, TV light
@@ -181,4 +181,4 @@ async def get_device_info(device):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
-    app.run(host='0.0.0.0', port=port, use_reloader=False)
+    app.run(host='0.0.0.0', port=8080, use_reloader=False)
