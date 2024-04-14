@@ -20,10 +20,7 @@ docker build -t lightcontrolapi:latest .
 2. **Run the Docker Container**:
 
 ```sh
-docker run -d -p 8080:8080 --name light_api lightcontrolapi:latest
-
-# To Test
-docker run -it -p 8080:8080 hamishburke/quartapp:latest
+./build-and-run.sh
 ```
 
 ### API Endpoints
@@ -37,7 +34,7 @@ The API provides the following endpoints:
 ```json
 {
   "action": "on",
-  "lights": ["tv_light", "jack_desk_light"]
+  "lights": ["tv_light", "desk_light"]
 }
 ```
 
@@ -45,9 +42,9 @@ The API provides the following endpoints:
 
 ```json
 {
-  "brightness": 100,
-  "rgb": [255, 255, 255],
-  "lights": ["kitchen_light"]
+  "brightness": 50,
+  "color": "#FF0000",
+  "lights": ["kitchen_light", "tv_light"]
 }
 ```
 

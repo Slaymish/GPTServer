@@ -31,6 +31,16 @@ async def initialize_lights():
             app.logger.error(f"Failed to connect to {name} at {ip}: {e}")
             lights[name] = None
 
+
+"""
+Control lights
+POST /control_lights
+{
+    "action": "on",  # on, off, toggle
+    "lights": ["kitchen_light", "tv_light"]  # Optional, control specific lights
+}
+
+"""
 @app.route('/control_lights', methods=['POST'])
 async def control_lights():
     """Control specified or all lights to turn on, off, or toggle."""
