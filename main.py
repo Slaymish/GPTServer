@@ -61,16 +61,19 @@ async def set_properties():
     brightness = data.get('brightness')
     hex_color = data.get('color')  # Expecting color as a hex code (e.g., "#FF0000")
     light_names = data.get('lights', lights.keys())  # Set properties for specific or all lights
+
     color = None
     if hex_color:
-        try:
-            rgb = tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))  # Convert hex to RGB tuple
-            color = Color(rgb[0], rgb[1], rgb[2])  # Create a Color object from RGB values
-        except Exception as e:
-            print(f"Failed to parse color: {e}")
-            color = None
+        if re.match(r'^#[0-9A-Fa-f]{6}$', hex_color):  # Validate hex color code
+            try:
+                rgb = tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))  # Convert hex to RGB tuple
+                color = Color(rgb[0], rgb[1], rgb[2])  # Create a Color object from RGB values
+            except Exception as e:
+                print(f"Failed to parse color: {e}")
+                color = None
+        else:
+            return jsonify({"error": "Invalid color format. Use #RRGGBB format."}), 400
 
-    # Set properties and turn on the lights
     results = await asyncio.gather(*[
         set_light_properties(lights[name], brightness=brightness, color=color) for name in light_names if name in lights
     ])
