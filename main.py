@@ -78,11 +78,14 @@ async def set_properties():
         if re.match(r'^#[0-9A-Fa-f]{6}$', hex_color):  # Validate hex color code
             try:
                 rgb = tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))  # Convert hex to RGB tuple
+                app.logger.info(f"RGB values: {rgb}")
                 color = Color(rgb[0], rgb[1], rgb[2])  # Create a Color object from RGB values
+                app.logger.info(f"Color object: {color}")
             except Exception as e:
                 print(f"Failed to parse color: {e}")
                 color = None
         else:
+            app.logger.error(f"Invalid color format: {hex_color}")
             return jsonify({"error": "Invalid color format. Use #RRGGBB format."}), 400
 
     results = await asyncio.gather(*[
