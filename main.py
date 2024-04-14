@@ -135,7 +135,7 @@ async def set_light_properties(device, brightness=None, color=None, ip_address=N
     else:
         if brightness is not None:
             if brightness > 0:
-                await device.turn_on()  # Make sure to turn on the plug if setting brightness
+                await device.on()  # Make sure to turn on the plug if setting brightness
             await device.set_brightness(brightness)
     
     return f"Properties set for device at {ip_address}"
