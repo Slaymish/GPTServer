@@ -92,7 +92,7 @@ async def set_properties():
 
     results = await asyncio.gather(*[
         set_light_properties(lights[name], brightness=brightness, color=color, ip_address=IP_ADDRESSES[name])
-        for name in light_names if name in lights
+        for name in light_names if name in lights  # Ensure the light exists
     ])
 
     response_data = {name: result for name, result in zip(light_names, results)}
@@ -123,20 +123,26 @@ async def get_info():
 
     return jsonify(results_dict), 200
 
+
 async def set_light_properties(device, brightness=None, color=None, ip_address=None):
-    print(f"Setting properties for device at {ip_address}")
-    if not device.name:  # Check if device name is empty (plug)
+    print(f"Device type for device at {ip_address}: {type(device)}") # Keep this for debugging
+
+    if isinstance(device, tapo.p100):  # Or the correct plug class
+        # Smart Plug Logic
         if brightness is not None:
-            await device.on() if brightness > 0 else await device.off()
+            await device.turn_on() if brightness > 0 else await device.turn_off()
     else:
+        # Light Bulb Logic (assuming all other devices are lights)
         if brightness is not None:
             if brightness > 0:
-                await device.on()  # Turn on the light if setting brightness is greater than 0
-            await device.set_brightness(brightness)  # Set the brightness
+                await device.turn_on()
+            await device.set_brightness(brightness)
         if color is not None:
-            await device.set_color(color)  # Set the color
-    
+            await device.set_color(color)
+
     return f"Properties set for device at {ip_address}"
+
+    
 
 async def control_light(device, action):
     """Control a light's state to on, off, or toggle based on the action."""
