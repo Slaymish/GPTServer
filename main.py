@@ -140,7 +140,7 @@ async def set_light_properties(device, brightness=None, hue=None, saturation=Non
 
     try:
         if brightness is not None:
-            await device.turn_on() if brightness > 0 else await device.turn_off()
+            await device.on() if brightness > 0 else await device.off()
             await device.set_brightness(int(value * 100))  # Assuming 0-100 scale
 
         if hue is not None and saturation is not None:
