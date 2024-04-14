@@ -6,9 +6,11 @@ import re
 
 app = Quart(__name__)
 
+# dot env
+
 # Environment variables for TAPO credentials
-TAPO_USERNAME = os.getenv("TAPO_USERNAME", "")
-TAPO_PASSWORD = os.getenv("TAPO_PASSWORD", "")
+TAPO_USERNAME = os.getenv("TAPO_USERNAME", "hamishapps@gmail.com")
+TAPO_PASSWORD = os.getenv("TAPO_PASSWORD", "l1tHyr~s")
 IP_ADDRESSES = {
     "kitchen_light": "192.168.68.60",
     "tv_light": "192.168.68.61",
@@ -126,6 +128,7 @@ async def get_info():
 
 async def set_light_properties(device, brightness=None, color=None, ip_address=None):
     print(f"Device type for device at {ip_address}: {type(device)}") # Keep this for debugging
+    print(dir(device))  # Shows available attributes and methods for the device object
 
     if isinstance(device, tapo.p100):  # Or the correct plug class
         # Smart Plug Logic
