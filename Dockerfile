@@ -1,4 +1,4 @@
-FROM python:3.9  # Or your preferred base image
+FROM python:3.9 
 
 WORKDIR /app
 
@@ -13,4 +13,4 @@ COPY . .
 EXPOSE 8080
 
 # Command to start the app 
-CMD ["python", "main.py"] 
+CMD ["python", "main.py"]
