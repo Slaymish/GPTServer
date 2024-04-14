@@ -72,7 +72,7 @@ Set properties for lights
 POST /set_properties
 {
     "brightness": 50,  # 0-100
-    "color": "#FF0000",  # Hex color code
+    "color": [255, 0, 0],  # RGB color values
     "lights": ["kitchen_light", "tv_light"]  # Optional, set properties for specific lights
 }
 """
@@ -80,14 +80,13 @@ POST /set_properties
 async def set_properties():
     data = await request.get_json()
     brightness = data.get('brightness')
-    hex_color = data.get('color')  # Expecting color as a hex code (e.g., "#FF0000")
+    rgb_color = data.get('color')  # Expecting color as RGB values (e.g., [255, 0, 0])
     light_names = data.get('lights', lights.keys())  # Set properties for specific or all lights
 
-    if hex_color:
-        if re.match(r'^#[0-9A-Fa-f]{6}$', hex_color):
-            rgb = tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))
-            app.logger.info(f"RGB values: {rgb}")
-            hue, saturation, value = rgb_to_hsv(*rgb)  # Convert RGB to HSV
+    if rgb_color:
+        if all(0 <= value <= 255 for value in rgb_color):
+            app.logger.info(f"RGB values: {rgb_color}")
+            hue, saturation, value = rgb_to_hsv(*rgb_color)  # Convert RGB to HSV
 
             results = await asyncio.gather(*[
                 set_light_properties(lights[name], brightness, hue, saturation, value, ip_address=IP_ADDRESSES[name], name=name) 
@@ -95,15 +94,14 @@ async def set_properties():
             ])
             return jsonify({name: "Properties set successfully" for name in light_names}), 200
         else:
-            app.logger.error(f"Invalid color format: {hex_color}")
-            return jsonify({"error": "Invalid color format. Use #RRGGBB format."}), 400
+            app.logger.error(f"Invalid RGB values: {rgb_color}")
+            return jsonify({"error": "Invalid RGB values. Each value should be between 0 and 255."}), 400
     else:
         # Handle brightness setting without color change
         results = await asyncio.gather(*[
             set_light_properties(lights[name], brightness, ip_address=IP_ADDRESSES[name], name=name) for name in light_names if name in lights
         ])
         return jsonify({name: "Brightness set successfully" for name in light_names}), 200
-
     
 @app.route('/get_info', methods=['GET'])
 async def get_info():
