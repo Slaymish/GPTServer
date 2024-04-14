@@ -93,9 +93,8 @@ async def set_properties():
                 # Convert RGB to HSV
                 hue, saturation, value = rgb_to_hsv(*rgb)  # Using * to unpack the RGB tuple
 
-                # Assuming your devices have set_hue_saturation and compatible brightness scale
-                await set_light_properties(lights[name], brightness, hue, saturation, value, ip_address=IP_ADDRESSES[name])
-                
+                # Assuming your devices have set_hue_saturation and compatible brightness scale 
+                await set_light_properties(lights[name], brightness, hue, saturation, value, ip_address=IP_ADDRESSES[name], name=name) 
             except Exception as e:
                 print(f"Failed to process color: {e}")
         else:
@@ -135,8 +134,7 @@ async def get_info():
 
     return jsonify(results_dict), 200
 
-    
-async def set_light_properties(device, brightness=None, hue=None, saturation=None, value=None, ip_address=None):
+async def set_light_properties(device, brightness=None, hue=None, saturation=None, value=None, ip_address=None, name=None):
     print(f"Device type for device at {ip_address}: {type(device)}") 
     print(dir(device)) 
 
@@ -148,7 +146,10 @@ async def set_light_properties(device, brightness=None, hue=None, saturation=Non
         if hue is not None and saturation is not None:
             await device.set_hue_saturation(hue, saturation) 
 
-        return f"Properties set for device at {ip_address}"
+        if name:
+            return f"Properties set for device '{name}' at {ip_address}"
+        else:
+            return f"Properties set for device at {ip_address}"
 
     except Exception as e:
         return f"Error setting properties for device at {ip_address}: {e}"
