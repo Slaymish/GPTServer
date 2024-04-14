@@ -86,11 +86,13 @@ async def set_properties():
             return jsonify({"error": "Invalid color format. Use #RRGGBB format."}), 400
 
     results = await asyncio.gather(*[
-        set_light_properties(lights[name], brightness=brightness, color=color) for name in light_names if name in lights
+        set_light_properties(lights[name], brightness=brightness, color=color, ip_address=IP_ADDRESSES[name]) 
+        for name in light_names if name in lights
     ])
 
     response_data = {name: result for name, result in zip(light_names, results)}
     return jsonify({"response_data": response_data, "status_code": 200}), 200
+
 
 @app.route('/get_info', methods=['GET'])
 async def get_info():
@@ -117,10 +119,10 @@ async def get_info():
 
     return jsonify(results_dict), 200
 
-async def set_light_properties(device, brightness=None, color=None):
-    print(f"Setting properties for {device}")
-    # Check if the device name indicates it is the living room plug
-    if 'living_room_plug' not in device.name:
+async def set_light_properties(device, brightness=None, color=None, ip_address=None):
+    print(f"Setting properties for device at {ip_address}")
+    # Check if the IP address is for the living room plug
+    if ip_address != "192.168.68.64":  # Assuming '192.168.68.64' is the IP for the living room plug
         if brightness is not None:
             if brightness > 0:
                 await device.on()  # Turn on the light if setting brightness
@@ -133,8 +135,7 @@ async def set_light_properties(device, brightness=None, color=None):
                 await device.turn_on()  # Make sure to turn on the plug if setting brightness
             await device.set_brightness(brightness)
     
-    return f"{device.name} properties set"
-
+    return f"Properties set for device at {ip_address}"
 
 async def control_light(device, action):
     """Control a light's state to on, off, or toggle based on the action."""
