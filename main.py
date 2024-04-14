@@ -91,7 +91,7 @@ async def set_properties():
             return jsonify({"error": "Invalid color format. Use #RRGGBB format."}), 400
 
     results = await asyncio.gather(*[
-        set_light_properties(lights[name], brightness=brightness, color=color)  # Pass color parameter
+        set_light_properties(lights[name], brightness=brightness, color=color, ip_address=IP_ADDRESSES[name])
         for name in light_names if name in lights
     ])
 
@@ -123,11 +123,11 @@ async def get_info():
 
     return jsonify(results_dict), 200
 
-async def set_light_properties(device, brightness=None, color=None):
-    print(f"Setting properties for device at {device.ip_address}")
+async def set_light_properties(device, brightness=None, color=None, ip_address=None):
+    print(f"Setting properties for device at {ip_address}")
     if not device.name:  # Check if device name is empty (plug)
         if brightness is not None:
-            await device.turn_on() if brightness > 0 else await device.turn_off()
+            await device.on() if brightness > 0 else await device.off()
     else:
         if brightness is not None:
             if brightness > 0:
@@ -136,7 +136,7 @@ async def set_light_properties(device, brightness=None, color=None):
         if color is not None:
             await device.set_color(color)  # Set the color
     
-    return f"Properties set for device at {device.ip_address}"
+    return f"Properties set for device at {ip_address}"
 
 async def control_light(device, action):
     """Control a light's state to on, off, or toggle based on the action."""
