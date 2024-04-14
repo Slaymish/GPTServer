@@ -1,6 +1,6 @@
 from quart import Quart, request, jsonify
 import asyncio
-from tapo import ApiClient, Color, PlugHandler
+from tapo import ApiClient, Color
 import os
 import re
 
@@ -124,22 +124,21 @@ async def get_info():
 
 async def set_light_properties(device, brightness=None, color=None, ip_address=None):
     print(f"Setting properties for device at {ip_address}")
-    if isinstance(device, PlugHandler):
+
+    if isinstance(device, ApiClient.p100):  # Check if the device is a plug (p100)
+        if brightness is not None:
+            await device.turn_on() if brightness > 0 else await device.turn_off()
+    elif isinstance(device, ApiClient.l530):  # Check if the device is a light (l530)
         if brightness is not None:
             if brightness > 0:
-                await device.turn_on()  # Turn on the plug if setting brightness
-            else:
-                await device.turn_off()  # Turn off the plug if brightness is 0
-    else:
-        if brightness is not None:
-            if brightness > 0:
-                await device.on()  # Turn on the light if setting brightness
-            await device.set_brightness(brightness)
+                await device.on()  # Turn on the light if setting brightness is greater than 0
+            await device.set_brightness(brightness)  # Set the brightness
         if color is not None:
-            await device.set_color(color)
+            await device.set_color(color)  # Set the color
+    else:
+        raise ValueError(f"Unsupported device type: {type(device)}")
     
     return f"Properties set for device at {ip_address}"
-
 
 async def control_light(device, action):
     """Control a light's state to on, off, or toggle based on the action."""
