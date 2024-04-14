@@ -1,0 +1,144 @@
+openapi: 3.0.0
+info:
+  title: Tapo Light Control API
+  description: API to control and monitor Tapo smart lights through a Raspberry Pi.
+  version: 1.0.0
+servers:
+  - url: https://mydevice-example-com.taildb558.ts.net
+    description: Access API through Tailscale network
+
+paths:
+  /control_lights:
+    post:
+      operationId: controlLights
+      summary: Control Tapo lights
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [on, off, toggle]
+                lights:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Control action results for each light
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                properties:
+                  kitchen_light:
+                    type: string
+                  tv_light:
+                    type: string
+                example:
+                  kitchen_light: "toggle successful"
+                  tv_light: "toggle successful"
+
+  /set_properties:
+    post:
+      operationId: setProperties
+      summary: Set properties of Tapo lights
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                brightness:
+                  type: integer
+                color:
+                  type: string
+                  pattern: "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+                lights:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Property setting results for each light
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: string
+                properties:
+                  kitchen_light:
+                    type: string
+                example:
+                  kitchen_light: "properties set successfully"
+
+  /get_info:
+    get:
+      operationId: getInfo
+      summary: Retrieve information about Tapo lights
+      parameters:
+        - name: lights
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+      responses:
+        "200":
+          description: Information about each light
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  properties:
+                    is_on:
+                      type: boolean
+                    hue:
+                      type: integer
+                      nullable: true
+                    brightness:
+                      type: integer
+                      nullable: true
+                properties:
+                  kitchen_light:
+                    type: object
+                    properties:
+                      is_on:
+                        type: boolean
+                      hue:
+                        type: integer
+                        nullable: true
+                      brightness:
+                        type: integer
+                        nullable: true
+                  desk_light:
+                    type: object
+                    properties:
+                      is_on:
+                        type: boolean
+                      hue:
+                        type: integer
+                        nullable: true
+                      brightness:
+                        type: integer
+                        nullable: true
+              example:
+                kitchen_light:
+                  is_on: true
+                  hue: 240
+                  brightness: 100
+                desk_light:
+                  is_on: false
+                  hue: 39
+                  brightness: 77
