@@ -1,4 +1,4 @@
-# Use the official lightweight Python image.
+# Use an official Python runtime as a parent image
 FROM python:3.9-slim
 
 # Set the working directory in the container
@@ -14,9 +14,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8080
 
 # Define environment variable
-ENV PORT 8080
-ENV TAPO_USERNAME hamishapps@gmail.com
-ENV TAPO_PASSWORD l1tHyr~s
+ENV NAME World
 
-# Run app.py when the container launches
-CMD ["sh", "-c", "hypercorn main:app --bind 0.0.0.0:$PORT"]
+# Run main.py when the container launches
+CMD ["python", "main.py"]
+
