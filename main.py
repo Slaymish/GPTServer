@@ -1,6 +1,6 @@
 from quart import Quart, request, jsonify
 import asyncio
-from tapo import ApiClient, Color
+from tapo import ApiClient, Color, PlugHandler
 import os
 import re
 
@@ -124,21 +124,22 @@ async def get_info():
 
 async def set_light_properties(device, brightness=None, color=None, ip_address=None):
     print(f"Setting properties for device at {ip_address}")
-    # Check if the IP address is for the living room plug
-    if ip_address != "192.168.68.64":  # Assuming '192.168.68.64' is the IP for the living room plug
+    if isinstance(device, PlugHandler):
+        if brightness is not None:
+            if brightness > 0:
+                await device.turn_on()  # Turn on the plug if setting brightness
+            else:
+                await device.turn_off()  # Turn off the plug if brightness is 0
+    else:
         if brightness is not None:
             if brightness > 0:
                 await device.on()  # Turn on the light if setting brightness
             await device.set_brightness(brightness)
         if color is not None:
             await device.set_color(color)
-    else:
-        if brightness is not None:
-            if brightness > 0:
-                await device.on()  # Make sure to turn on the plug if setting brightness
-            await device.set_brightness(brightness)
     
     return f"Properties set for device at {ip_address}"
+
 
 async def control_light(device, action):
     """Control a light's state to on, off, or toggle based on the action."""
