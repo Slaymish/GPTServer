@@ -85,15 +85,19 @@ async def set_properties():
 
     color = None
     if hex_color:
-        if re.match(r'^#[0-9A-Fa-f]{6}$', hex_color):  # Validate hex color code
+        if re.match(r'^#[0-9A-Fa-f]{6}$', hex_color):
             try:
-                rgb = tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))  # Convert hex to RGB tuple
+                rgb = tuple(int(hex_color[i:i+2], 16) for i in (1, 3, 5))
                 app.logger.info(f"RGB values: {rgb}")
-                color = Color(rgb[0], rgb[1], rgb[2])  # Create a Color object from RGB values
-                app.logger.info(f"Color object: {color}")
+
+                # Convert RGB to HSV
+                hue, saturation, value = rgb_to_hsv(*rgb)  # Using * to unpack the RGB tuple
+
+                # Assuming your devices have set_hue_saturation and compatible brightness scale
+                await set_light_properties(lights[name], brightness, hue, saturation, value, ip_address=IP_ADDRESSES[name])
+                
             except Exception as e:
-                print(f"Failed to parse color: {e}")
-                color = None
+                print(f"Failed to process color: {e}")
         else:
             app.logger.error(f"Invalid color format: {hex_color}")
             return jsonify({"error": "Invalid color format. Use #RRGGBB format."}), 400
@@ -131,28 +135,23 @@ async def get_info():
 
     return jsonify(results_dict), 200
 
-
-async def set_light_properties(device, brightness=None, color=None, ip_address=None):
+    
+async def set_light_properties(device, brightness=None, hue=None, saturation=None, value=None, ip_address=None):
     print(f"Device type for device at {ip_address}: {type(device)}") 
     print(dir(device)) 
 
     try:
-        # Common Logic (Both plugs and light bulbs might support)
         if brightness is not None:
-            await device.on() if brightness > 0 else await device.off()
-            await device.set_brightness(brightness)  # Try setting brightness
+            await device.turn_on() if brightness > 0 else await device.turn_off()
+            await device.set_brightness(int(value * 100))  # Assuming 0-100 scale
 
-        if color is not None:
-            hue, saturation, value = rgb_to_hsv(color.red, color.green, color.blue)
-            await device.set_hue_saturation(hue, saturation)  # Assuming set_hue_saturation exists 
-            await device.set_brightness(value * 100)  # If brightness works on that scale
-
+        if hue is not None and saturation is not None:
+            await device.set_hue_saturation(hue, saturation) 
 
         return f"Properties set for device at {ip_address}"
 
     except Exception as e:
         return f"Error setting properties for device at {ip_address}: {e}"
-    
 
  
 
