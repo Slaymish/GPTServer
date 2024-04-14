@@ -2,6 +2,7 @@ from quart import Quart, request, jsonify
 import asyncio
 from tapo import ApiClient, Color
 import os
+import re
 
 app = Quart(__name__)
 
