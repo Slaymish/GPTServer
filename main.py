@@ -3,6 +3,8 @@ import asyncio
 from tapo import ApiClient, Color, EnergyDataInterval  # Import EnergyDataInterval
 import os
 import re
+import colorsys
+
 
 app = Quart(__name__)
 
@@ -20,6 +22,10 @@ IP_ADDRESSES = {
 }
 
 lights = {}
+
+def rgb_to_hsv(r, g, b):
+    return colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+
 
 @app.before_serving
 async def initialize_lights():
@@ -137,12 +143,17 @@ async def set_light_properties(device, brightness=None, color=None, ip_address=N
             await device.set_brightness(brightness)  # Try setting brightness
 
         if color is not None:
-            await device.set_color(color)  # Try setting color
+            hue, saturation, value = rgb_to_hsv(color.red, color.green, color.blue)
+            await device.set_hue_saturation(hue, saturation)  # Assuming set_hue_saturation exists 
+            await device.set_brightness(value * 100)  # If brightness works on that scale
+
 
         return f"Properties set for device at {ip_address}"
 
     except Exception as e:
         return f"Error setting properties for device at {ip_address}: {e}"
+    
+
  
 
 async def control_light(device, action):
