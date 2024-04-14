@@ -119,7 +119,8 @@ async def get_info():
 
 async def set_light_properties(device, brightness=None, color=None):
     print(f"Setting properties for {device}")
-    if isinstance(device, ColorLightHandler):
+    # Check if the device name indicates it is the living room plug
+    if 'living_room_plug' not in device.name:
         if brightness is not None:
             if brightness > 0:
                 await device.on()  # Turn on the light if setting brightness
@@ -129,12 +130,10 @@ async def set_light_properties(device, brightness=None, color=None):
     else:
         if brightness is not None:
             if brightness > 0:
-                await device.turn_on()  # Make sure to turn on the light if setting brightness
+                await device.turn_on()  # Make sure to turn on the plug if setting brightness
             await device.set_brightness(brightness)
-        if color is not None:
-            await device.set_color(color)
     
-    return f"{device} properties set"
+    return f"{device.name} properties set"
 
 
 async def control_light(device, action):
