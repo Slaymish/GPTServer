@@ -100,15 +100,12 @@ async def set_properties():
         else:
             app.logger.error(f"Invalid color format: {hex_color}")
             return jsonify({"error": "Invalid color format. Use #RRGGBB format."}), 400
-
-    results = await asyncio.gather(*[
-        set_light_properties(lights[name], brightness=brightness, color=color, ip_address=IP_ADDRESSES[name])
-        for name in light_names if name in lights  # Ensure the light exists
-    ])
-
-    response_data = {name: result for name, result in zip(light_names, results)}
-    return jsonify({"response_data": response_data, "status_code": 200}), 200
-
+    else:
+        results = await asyncio.gather(*[
+            set_light_properties(lights[name], brightness, ip_address=IP_ADDRESSES[name], name=name) for name in light_names
+        ])
+        return jsonify(results), 200
+    
 @app.route('/get_info', methods=['GET'])
 async def get_info():
     """Retrieve information about specified or all connected lights."""
