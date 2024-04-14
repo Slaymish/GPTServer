@@ -1,12 +1,12 @@
 from quart import Quart, request, jsonify
 import asyncio
-from tapo import ApiClient, Color
+from tapo import ApiClient, Color, EnergyDataInterval  # Import EnergyDataInterval
 import os
 import re
 
 app = Quart(__name__)
 
-# Environment variables for Tapo credentials
+# Environment variables for TAPO credentials
 TAPO_USERNAME = os.getenv("TAPO_USERNAME", "")
 TAPO_PASSWORD = os.getenv("TAPO_PASSWORD", "")
 IP_ADDRESSES = {
@@ -26,12 +26,14 @@ async def initialize_lights():
     client = ApiClient(TAPO_USERNAME, TAPO_PASSWORD)
     for name, ip in IP_ADDRESSES.items():
         try:
-            lights[name] = await client.p100(ip) if 'plug' in name else await client.l530(ip)
+            if 'plug' in name:
+                lights[name] = await client.p100(ip)
+            else:
+                lights[name] = await client.l530(ip)
             app.logger.info(f"Connected to {name} at {ip} successfully.")
         except Exception as e:
             app.logger.error(f"Failed to connect to {name} at {ip}: {e}")
             lights[name] = None
-
 
 """
 Control lights
@@ -89,13 +91,12 @@ async def set_properties():
             return jsonify({"error": "Invalid color format. Use #RRGGBB format."}), 400
 
     results = await asyncio.gather(*[
-        set_light_properties(lights[name], brightness=brightness, color=color, ip_address=IP_ADDRESSES[name]) 
+        set_light_properties(lights[name], brightness=brightness, color=color)  # Pass color parameter
         for name in light_names if name in lights
     ])
 
     response_data = {name: result for name, result in zip(light_names, results)}
     return jsonify({"response_data": response_data, "status_code": 200}), 200
-
 
 @app.route('/get_info', methods=['GET'])
 async def get_info():
@@ -122,23 +123,20 @@ async def get_info():
 
     return jsonify(results_dict), 200
 
-async def set_light_properties(device, brightness=None, color=None, ip_address=None):
-    print(f"Setting properties for device at {ip_address}")
-
-    if isinstance(device, ApiClient.p100):  # Check if the device is a plug (p100)
+async def set_light_properties(device, brightness=None, color=None):
+    print(f"Setting properties for device at {device.ip_address}")
+    if not device.name:  # Check if device name is empty (plug)
         if brightness is not None:
             await device.turn_on() if brightness > 0 else await device.turn_off()
-    elif isinstance(device, ApiClient.l530):  # Check if the device is a light (l530)
+    else:
         if brightness is not None:
             if brightness > 0:
                 await device.on()  # Turn on the light if setting brightness is greater than 0
             await device.set_brightness(brightness)  # Set the brightness
         if color is not None:
             await device.set_color(color)  # Set the color
-    else:
-        raise ValueError(f"Unsupported device type: {type(device)}")
     
-    return f"Properties set for device at {ip_address}"
+    return f"Properties set for device at {device.ip_address}"
 
 async def control_light(device, action):
     """Control a light's state to on, off, or toggle based on the action."""
