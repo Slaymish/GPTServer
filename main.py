@@ -127,25 +127,23 @@ async def get_info():
 
 
 async def set_light_properties(device, brightness=None, color=None, ip_address=None):
-    print(f"Device type for device at {ip_address}: {type(device)}") # Keep this for debugging
-    print(dir(device))  # Shows available attributes and methods for the device object
+    print(f"Device type for device at {ip_address}: {type(device)}") 
+    print(dir(device)) 
 
-    if isinstance(device, tapo.p100):  # Or the correct plug class
-        # Smart Plug Logic
+    try:
+        # Common Logic (Both plugs and light bulbs might support)
         if brightness is not None:
             await device.turn_on() if brightness > 0 else await device.turn_off()
-    else:
-        # Light Bulb Logic (assuming all other devices are lights)
-        if brightness is not None:
-            if brightness > 0:
-                await device.turn_on()
-            await device.set_brightness(brightness)
+            await device.set_brightness(brightness)  # Try setting brightness
+
         if color is not None:
-            await device.set_color(color)
+            await device.set_color(color)  # Try setting color
 
-    return f"Properties set for device at {ip_address}"
+        return f"Properties set for device at {ip_address}"
 
-    
+    except Exception as e:
+        return f"Error setting properties for device at {ip_address}: {e}"
+ 
 
 async def control_light(device, action):
     """Control a light's state to on, off, or toggle based on the action."""
