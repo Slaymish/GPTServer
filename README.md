@@ -2,6 +2,9 @@
 
 This API provides a simple interface to control smart lights in your home network programmatically. It is built using Quart, which is an asynchronous Python web framework.
 
+To use this API inside if a GPT, add an action and paste the openai schema into there.
+You will have to host the container somehow and use that url in the schema
+
 ## Requirements
 
 - Docker
