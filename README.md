@@ -11,14 +11,6 @@ This API provides a simple interface to control smart lights in your home networ
 
 ## Building and Running the Docker Container
 
-1. **Build the Docker Image**:
-
-```sh
-docker build -t lightcontrolapi:latest .
-```
-
-2. **Run the Docker Container**:
-
 ```sh
 ./build-and-run.sh
 ```
